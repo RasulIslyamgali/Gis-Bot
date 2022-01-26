@@ -1,0 +1,1 @@
+worker: python get_cors.py

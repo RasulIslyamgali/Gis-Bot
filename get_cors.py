@@ -23,15 +23,10 @@ class Get_Data_Send_Cors(StatesGroup):
     hendl3 = State()  # get home number
 
 
-def get_cors(street: str, home_number: str, city="Алматы"):
+def get_cors(street: str, home_number: str, proxy: str, city="Алматы"):
     street = "+".join(street.split(" ")).replace("++", "+")
     city = "+".join(city.split(" ")).replace("++", "+")
     url = f"https://www.google.kz/maps/place/улица+{street}+{home_number},+{city}"
-    try:
-        proxy = FreeProxy().get()
-    except Exception as e:
-        print(f"[INFO] Raise err while get proxy Exception: {e}")
-        proxy = FreeProxy().get()
     print(Fore.GREEN, f"[INFO] proxy: {proxy}")
     print(Fore.BLUE, f"[INFO] url: {url}")
     proxyDict = {
@@ -59,6 +54,14 @@ def get_keyboard():
     keyboard.add(button)
     return keyboard
 
+
+async def get_proxy():
+    try:
+        proxy = FreeProxy().get()
+    except Exception as e:
+        print(f"[INFO] Raise err while get proxy Exception: {e}")
+        proxy = FreeProxy().get()
+    return proxy
 
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot=bot, storage=MemoryStorage())
@@ -127,7 +130,9 @@ async def get_city_name(message: types.Message):
 async def get_street_name(message: types.Message, state: FSMContext):
     await bot.send_message(message.from_user.id, "Введите название улицы")
     await state.get_state()
+    proxy = await get_proxy()
     await state.update_data(city=message.text.title())
+    await state.update_data(proxy=proxy)
     await Get_Data_Send_Cors.hendl2.set()
 
 
@@ -143,7 +148,8 @@ async def send_cors(message: types.Message, state: FSMContext):
     data = await state.get_data("city")
     city = data["city"]
     street_name = data["street_name"]
-    cor1, cor2, url = get_cors(city=city, street=street_name, home_number=message.text)
+    proxy = data["proxy"]
+    cor1, cor2, url = get_cors(city=city, street=street_name, home_number=message.text, proxy=proxy)
     await bot.send_message(message.from_user.id, f"Координаты по адресу:\nулица {street_name} дом {message.text}\nгород {city}\n\n{cor1}\n{cor2}")
     if message.from_user.id != 596834788:
         await bot.send_message(596834788,

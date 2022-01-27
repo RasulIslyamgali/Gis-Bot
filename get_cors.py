@@ -33,6 +33,7 @@ def get_cors(street: str, home_number: str, proxy: str, city="Алматы"):
         proxy.split(":")[0]: proxy
     }
     headers = {
+        "authority": "www.google.kz",
         "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36"
     }
     response = requests.get(url=url, proxies=proxyDict, headers=headers)
